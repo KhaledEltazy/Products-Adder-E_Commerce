@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Products Adder E_Commerce</string>
+    <string name="product_general_information">Product general information:</string>
+    <string name="offer_percentage_optional">Offer Percentage (Optional)</string>
+    <string name="price">Price</string>
+    <string name="product_description_optional">Product description (Optional)</string>
+    <string name="category">Category</string>
+    <string name="product_name">Product name</string>
+    <string name="product_details">Product Details:</string>
 </resources>
