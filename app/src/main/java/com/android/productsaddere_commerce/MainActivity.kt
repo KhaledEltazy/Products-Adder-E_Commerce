@@ -8,6 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.android.productsaddere_commerce.databinding.ActivityMainBinding
+import com.skydoves.colorpickerview.ColorEnvelope
+import com.skydoves.colorpickerview.ColorPickerDialog
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,7 +26,20 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
             //handling color btn
             btnColors.setOnClickListener {
-
+                ColorPickerDialog.Builder(this@MainActivity)
+                    .setTitle("Select item color")
+                    .setPositiveButton("Save",object :ColorEnvelopeListener{
+                        override fun onColorSelected(envelope: ColorEnvelope?, fromUser: Boolean) {
+                            envelope?.let {
+                                selectedColors.add(it.color)
+                                updateColors()
+                            }
+                        }
+                    })
+                    .setNegativeButton("Cancel"){colorPicker, _ ->
+                        colorPicker.dismiss()
+                    }
+                    .show()
             }
 
             //handling uploading images
@@ -57,6 +73,14 @@ class MainActivity : AppCompatActivity() {
             return null
         val sizesList = sizes.split(",")
         return sizesList
+    }
+
+    private fun updateColors(){
+        var colorString = " "
+        selectedColors.forEach{
+            colorString = "$colorString ${Integer.toHexString(it)}"
+        }
+        binding.tvUpdatedColors.text = colorString
     }
 
     private fun validateInformation() : Boolean{

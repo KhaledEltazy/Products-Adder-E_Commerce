@@ -58,4 +58,11 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore:25.1.1")
     //firebase cloud storage
     implementation ("com.google.firebase:firebase-storage:21.0.1")
+
+    //Color picker
+    implementation ("com.github.skydoves:colorpickerview:2.2.4")
+
+    //Lifecycle
+    val lifecycle_version = "2.5.1"
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version")
 }
