@@ -1,9 +1,13 @@
 package com.android.productsaddere_commerce
 
+import android.content.Intent
+import android.content.Intent.ACTION_GET_CONTENT
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,6 +26,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val selectImagesActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+            result -> if(result.resultCode == RESULT_OK){
+                val intent = result.data
+
+            //Multiple Images selected
+            if(intent?.clipData != null){
+                val count = intent.clipData?.itemCount ?: 0
+                (0 until count).forEach {
+                    val imageUri = intent.clipData?.getItemAt(it)?.uri
+                    imageUri?.let {
+                        selectedImages.add(it)
+                    }
+                }
+            }   else {
+                 val imageUri = intent?.data
+                imageUri?.let { selectedImages.add(it) }
+                }
+            updateImages()
+            }
+        }
 
         binding.apply {
             //handling color btn
@@ -42,9 +67,12 @@ class MainActivity : AppCompatActivity() {
                     .show()
             }
 
-            //handling uploading images
+            //handling uploading images from gallery
             btnImages.setOnClickListener {
-
+                val intent = Intent(ACTION_GET_CONTENT)
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true)
+                intent.type = "image/*"
+                selectImagesActivityResult.launch(intent)
             }
 
             //handling save data
@@ -57,6 +85,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun updateImages() {
+        binding.tvImagesCount.text =selectedImages.size.toString()
     }
 
     private fun saveProduct(){
