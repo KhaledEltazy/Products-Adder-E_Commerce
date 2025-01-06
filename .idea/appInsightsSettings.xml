@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.android.productsaddere_commerce" />
+                  <option name="mobileSdkAppId" value="1:719213248976:android:0273eb9f89b6b57d79f9d5" />
+                  <option name="projectId" value="ecommerace-f57af" />
+                  <option name="projectNumber" value="719213248976" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

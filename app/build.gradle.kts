@@ -1,11 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
+
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.android.productsaddere_commerce"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.android.productsaddere_commerce"
@@ -46,7 +49,13 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //firebase fireStore
+    implementation ("com.google.firebase:firebase-firestore:25.1.1")
+    //firebase cloud storage
+    implementation ("com.google.firebase:firebase-storage:21.0.1")
 }
