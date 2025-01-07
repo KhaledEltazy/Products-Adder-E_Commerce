@@ -2,8 +2,12 @@ package com.android.productsaddere_commerce
 
 import android.content.Intent
 import android.content.Intent.ACTION_GET_CONTENT
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContract
@@ -11,16 +15,29 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.android.productsaddere_commerce.databinding.ActivityMainBinding
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import com.skydoves.colorpickerview.ColorEnvelope
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityMainBinding
     private var selectedImages = mutableListOf<Uri>()
     private val selectedColors = mutableListOf<Int>()
+    private val productStorage = Firebase.storage.reference
+    private val firestore = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +104,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //showing counts of images in UI
     private fun updateImages() {
         binding.tvImagesCount.text =selectedImages.size.toString()
     }
@@ -98,8 +116,81 @@ class MainActivity : AppCompatActivity() {
         val offer = binding.etOffer.text.toString().trim()
         val description = binding.etProductDescription.text.toString().trim()
         val sizes = getSizesList(binding.etSizes.text.toString().trim())
+        val imageByteArrays = getImagesByteArrays()
+        val images = mutableListOf<String>()
+
+        //uploading all info to fireStore
+        lifecycleScope.launch(Dispatchers.IO){
+            withContext(Dispatchers.Main){
+                showingProgressBar()
+            }
+
+            try{
+                async {
+                    imageByteArrays.forEach {
+                        val id = UUID.randomUUID().toString()
+                        launch {
+                            val imageStorage = productStorage.child("product/images/$id")
+                            val result = imageStorage.putBytes(it).await()
+                            val downloadUrl = result.storage.downloadUrl.await().toString()
+                            images.add(downloadUrl)
+                        }
+                    }
+                }.await()
+
+            } catch(e: java.lang.Exception){
+                e.printStackTrace()
+                withContext(Dispatchers.Main){
+                    hideLoading()
+                }
+            }
+
+            val product = Product(
+                UUID.randomUUID().toString(),
+                name,
+                category,
+                price.toFloat(),
+                if(offer.isEmpty()) null else offer.toFloat(),
+                if(description.isEmpty()) null else description,
+                if(selectedColors.isEmpty()) null else selectedColors,
+                sizes,
+                images
+            )
+
+            firestore.collection("Products").add(product).addOnSuccessListener {
+                hideLoading()
+
+            } .addOnFailureListener {
+                hideLoading()
+                Log.e("Error",it.message.toString())
+            }
+        }
     }
 
+    //hiding progressbar
+    private fun hideLoading() {
+        binding.progressBar.visibility = View.INVISIBLE
+    }
+
+    //showing ProgressBar
+    private fun showingProgressBar() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    // get Images in bytesArrays
+    private fun getImagesByteArrays(): List<ByteArray> {
+        val imagesByteArray = mutableListOf<ByteArray>()
+        selectedImages.forEach {
+            val stress = ByteArrayOutputStream()
+            val imageBmp = MediaStore.Images.Media.getBitmap(contentResolver,it)
+            if(imageBmp.compress(Bitmap.CompressFormat.JPEG,100,stress)){
+                imagesByteArray.add(stress.toByteArray())
+            }
+        }
+        return imagesByteArray
+    }
+
+    //getting sizes
     private fun getSizesList(sizes : String) : List<String>?{
         if(sizes.isEmpty())
             return null
@@ -107,6 +198,7 @@ class MainActivity : AppCompatActivity() {
         return sizesList
     }
 
+    //update color list
     private fun updateColors(){
         var colorString = " "
         selectedColors.forEach{
@@ -115,6 +207,7 @@ class MainActivity : AppCompatActivity() {
         binding.tvUpdatedColors.text = colorString
     }
 
+    //checking if all require info are provided
     private fun validateInformation() : Boolean{
         if(binding.etName.text.trim().toString().isEmpty()) return false
         if(binding.etPrice.text.toString().trim().isEmpty()) return false
