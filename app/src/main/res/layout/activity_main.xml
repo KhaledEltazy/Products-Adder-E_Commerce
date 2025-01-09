@@ -40,17 +40,36 @@
                 android:hint="@string/product_name"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvHeader" />
+                app:layout_constraintTop_toBottomOf="@id/tvHeader"
+                android:inputType="text"/>
 
-            <EditText
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/etCategory"
-                style="@style/editText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="@string/category"
-                app:layout_constraintEnd_toEndOf="parent"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etName" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etName"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toTopOf="@id/etProductDescription"
+                android:layout_marginBottom="8dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/category"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/choose_your_category"
+                    android:textSize="20sp"
+                    android:textColor="@color/dark_grey"
+                    android:inputType="none"/>
+
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
 
             <EditText
                 android:id="@+id/etProductDescription"
@@ -60,7 +79,9 @@
                 android:hint="@string/product_description_optional"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etCategory" />
+                app:layout_constraintTop_toBottomOf="@id/etCategory"
+                android:inputType="textMultiLine"
+                app:layout_constraintBottom_toTopOf="@id/etPrice"/>
 
             <EditText
                 android:id="@+id/etPrice"
@@ -70,7 +91,8 @@
                 android:hint="@string/price"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etProductDescription" />
+                app:layout_constraintTop_toBottomOf="@id/etProductDescription"
+                android:inputType="numberDecimal"/>
 
             <EditText
                 android:id="@+id/etOffer"
@@ -80,7 +102,8 @@
                 android:hint="@string/offer_percentage_optional"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etPrice" />
+                app:layout_constraintTop_toBottomOf="@id/etPrice"
+                android:inputType="numberDecimal"/>
 
             <TextView
                 android:id="@+id/tvProductDetails"
@@ -96,12 +119,13 @@
                 style="@style/editText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="Sizes(Optional) | user , between earch Sizes"
+                android:hint="@string/sizes_optional_user_between_earch_sizes"
                 android:singleLine="true"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvProductDetails" />
+                app:layout_constraintTop_toBottomOf="@id/tvProductDetails"
+                android:inputType="text"/>
 
             <TextView
                 android:id="@+id/tvUpdatedColors"

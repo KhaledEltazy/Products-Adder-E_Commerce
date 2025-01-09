@@ -8,13 +8,10 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.android.productsaddere_commerce.databinding.ActivityMainBinding
 import com.google.firebase.Firebase
@@ -29,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
@@ -39,10 +37,14 @@ class MainActivity : AppCompatActivity() {
     private val productStorage = Firebase.storage.reference
     private val firestore = Firebase.firestore
 
+    private val categoryList = listOf<String>("Special Products","Best deals","Chair","Cupboard","Table","Accessory","Furniture")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        populateDropDownMenu()
 
         val selectImagesActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
             result -> if(result.resultCode == RESULT_OK){
@@ -97,11 +99,18 @@ class MainActivity : AppCompatActivity() {
                 val productValidation = validateInformation()
                 if (!productValidation){
                     Toast.makeText(this@MainActivity,"Check your inputs",Toast.LENGTH_LONG).show()
+                } else {
+                    saveProduct()
                 }
-                saveProduct()
             }
         }
 
+    }
+
+    //implementation of dropDownMenu of category
+    private fun populateDropDownMenu(){
+        val adapter = ArrayAdapter(this@MainActivity,R.layout.drop_down_list,categoryList)
+        binding.category.setAdapter(adapter)
     }
 
     //showing counts of images in UI
@@ -111,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun saveProduct(){
         val name = binding.etName.text.toString().trim()
-        val category = binding.etCategory.text.toString().trim()
+        val category = binding.category.text.toString().trim()
         val price = binding.etPrice.text.toString().trim()
         val offer = binding.etOffer.text.toString().trim()
         val description = binding.etProductDescription.text.toString().trim()
@@ -127,13 +136,15 @@ class MainActivity : AppCompatActivity() {
 
             try{
                 async {
-                    imageByteArrays.forEach {
+                    imageByteArrays.forEach { byteArray ->
                         val id = UUID.randomUUID().toString()
-                        launch {
+                        try {
                             val imageStorage = productStorage.child("product/images/$id")
-                            val result = imageStorage.putBytes(it).await()
+                            val result = imageStorage.putBytes(byteArray).await()
                             val downloadUrl = result.storage.downloadUrl.await().toString()
                             images.add(downloadUrl)
+                        } catch (e: Exception) {
+                            Log.e("FirebaseUpload", "Failed to upload image: $id", e)
                         }
                     }
                 }.await()
@@ -141,7 +152,7 @@ class MainActivity : AppCompatActivity() {
             } catch(e: java.lang.Exception){
                 e.printStackTrace()
                 withContext(Dispatchers.Main){
-                    hideLoading()
+                    hidingProgressBar()
                 }
             }
 
@@ -158,17 +169,17 @@ class MainActivity : AppCompatActivity() {
             )
 
             firestore.collection("Products").add(product).addOnSuccessListener {
-                hideLoading()
-
-            } .addOnFailureListener {
-                hideLoading()
+                Toast.makeText(this@MainActivity,"product saved successfully",Toast.LENGTH_LONG).show()
+                hidingProgressBar()
+            }.addOnFailureListener {
                 Log.e("Error",it.message.toString())
+                hidingProgressBar()
             }
         }
     }
 
     //hiding progressbar
-    private fun hideLoading() {
+    private fun hidingProgressBar() {
         binding.progressBar.visibility = View.INVISIBLE
     }
 
@@ -181,10 +192,14 @@ class MainActivity : AppCompatActivity() {
     private fun getImagesByteArrays(): List<ByteArray> {
         val imagesByteArray = mutableListOf<ByteArray>()
         selectedImages.forEach {
-            val stress = ByteArrayOutputStream()
-            val imageBmp = MediaStore.Images.Media.getBitmap(contentResolver,it)
-            if(imageBmp.compress(Bitmap.CompressFormat.JPEG,100,stress)){
-                imagesByteArray.add(stress.toByteArray())
+            try {
+                val stream = ByteArrayOutputStream()
+                val imageBmp = MediaStore.Images.Media.getBitmap(contentResolver, it)
+                if (imageBmp.compress(Bitmap.CompressFormat.JPEG, 100, stream)) {
+                    imagesByteArray.add(stream.toByteArray())
+                }
+            } catch (e: IOException) {
+                Log.e("Error", "Failed to process image: ${it.path}", e)
             }
         }
         return imagesByteArray
@@ -209,10 +224,9 @@ class MainActivity : AppCompatActivity() {
 
     //checking if all require info are provided
     private fun validateInformation() : Boolean{
-        if(binding.etName.text.trim().toString().isEmpty()) return false
+        if(binding.etName.text.toString().trim().isEmpty()) return false
         if(binding.etPrice.text.toString().trim().isEmpty()) return false
-        if(binding.etCategory.text.toString().trim().isEmpty()) return false
-        if(binding.etPrice.text.toString().trim().isEmpty()) return false
+        if(binding.category.text.toString().trim().isEmpty()) return false
         if(selectedImages.isEmpty()) return false
         else return true
     }

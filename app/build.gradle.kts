@@ -65,4 +65,8 @@ dependencies {
     //Lifecycle
     val lifecycle_version = "2.5.1"
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version")
+
+    //Material Design
+    implementation ("com.google.android.material:material:1.3.0-alpha03")
+
 }

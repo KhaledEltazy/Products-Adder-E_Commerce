@@ -7,4 +7,6 @@
     <string name="category">Category</string>
     <string name="product_name">Product name</string>
     <string name="product_details">Product Details:</string>
+    <string name="choose_your_category">Choose your category</string>
+    <string name="sizes_optional_user_between_earch_sizes">Sizes(Optional) | user , between earch Sizes</string>
 </resources>
