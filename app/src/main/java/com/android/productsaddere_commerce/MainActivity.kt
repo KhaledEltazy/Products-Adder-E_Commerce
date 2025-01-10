@@ -170,7 +170,9 @@ class MainActivity : AppCompatActivity() {
 
             firestore.collection("Products").add(product).addOnSuccessListener {
                 Toast.makeText(this@MainActivity,"product saved successfully",Toast.LENGTH_LONG).show()
+                resetFields()
                 hidingProgressBar()
+                Toast.makeText(this@MainActivity,"Now you are ready for new one",Toast.LENGTH_LONG).show()
             }.addOnFailureListener {
                 Log.e("Error",it.message.toString())
                 hidingProgressBar()
@@ -229,6 +231,18 @@ class MainActivity : AppCompatActivity() {
         if(binding.category.text.toString().trim().isEmpty()) return false
         if(selectedImages.isEmpty()) return false
         else return true
+    }
+
+    //reset all fields
+    private fun resetFields(){
+        binding.etName.text.clear()
+        binding.etPrice.text.clear()
+        binding.tvImagesCount.visibility = View.INVISIBLE
+        selectedImages.clear()
+        selectedColors.clear()
+        binding.etProductDescription.text.clear()
+        binding.etSizes.text.clear()
+        binding.tvUpdatedColors.visibility = View.INVISIBLE
     }
 
 }
